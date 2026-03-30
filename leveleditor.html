@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snek Burd - Level Editor</title>
+  <style>
+    body {
+      background-color: #222;
+      color: #FFF;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      font-family: sans-serif;
+      box-sizing: border-box;
+      gap: 30px;
+    }
+
+    #editor-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    canvas {
+      width: 512px;
+      height: 512px;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      background-color: #111;
+      box-shadow: 0 0 20px rgba(0,0,0,0.8);
+      cursor: crosshair;
+    }
+
+    .panel {
+      background: #333;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 350px;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      background-color: #444;
+      color: white;
+      border: 2px solid #555;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+
+    button:hover { background-color: #555; }
+    
+    button.active {
+      background-color: #28a745;
+      border-color: #1e7e34;
+    }
+
+    .level-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #222;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 250px;
+      background: #111;
+      color: #0f0;
+      font-family: monospace;
+      border: 1px solid #555;
+      padding: 10px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    h2, h3 { margin: 0; }
+  </style>
+</head>
+<body>
+
+  <div id="editor-container">
+    <div class="level-nav" style="width: 512px;">
+      <button onclick="prevLevel()">&#8592; Prev</button>
+      <h2 id="level-indicator">Level 1</h2>
+      <button onclick="nextLevel()">Next &#8594;</button>
+    </div>
+    
+    <canvas id="editor-canvas" width="128" height="128"></canvas>
+  </div>
+
+  <div class="panel">
+    <h3>Tools</h3>
+    <div class="tool-grid">
+      <button id="tool-wall" class="tool-btn active" onclick="setTool('wall')">Wall</button>
+      <button id="tool-food" class="tool-btn" onclick="setTool('food')">Food</button>
+      <button id="tool-spike" class="tool-btn" onclick="setTool('spike')">Spike</button>
+      <button id="tool-snake" class="tool-btn" onclick="setTool('snake')">Snake</button>
+      <button id="tool-finish" class="tool-btn" onclick="setTool('finish')">Finish</button>
+      <button id="tool-erase" class="tool-btn" onclick="setTool('erase')">Eraser</button>
+    </div>
+
+    <hr style="width: 100%; border-color: #555;">
+
+    <h3>Level Manager</h3>
+    <div class="tool-grid">
+      <button onclick="addLevel()">+ New Level</button>
+      <button onclick="clearLevel()" style="background-color: #8b0000;">Clear Current</button>
+    </div>
+
+    <hr style="width: 100%; border-color: #555;">
+
+    <h3>Import / Export</h3>
+    <textarea id="io-box" placeholder="Paste your JS level array here to load..."></textarea>
+    <div class="tool-grid">
+      <button onclick="exportLevels()" style="background-color: #0056b3;">Export to Box</button>
+      <button onclick="importLevels()" style="background-color: #d39e00;">Load from Box</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('editor-canvas');
+    const ctx = canvas.getContext('2d');
+
+    ctx.imageSmoothingEnabled = false;
+
+    const gridSize = 8;
+    const tileCount = canvas.width / gridSize;
+
+    // --- Asset Loading ---
+    const bgImage = new Image(); bgImage.src = './assets/sprites/bgimage.png';
+    const snakeSprite = new Image(); snakeSprite.src = './assets/sprites/snake.png';
+    const wallSprite = new Image(); wallSprite.src = './assets/sprites/wall.png';
+    const appleSprite = new Image(); appleSprite.src = './assets/sprites/apple.png';
+    const finishSprite = new Image(); finishSprite.src = './assets/sprites/finish.png';
+    const spikeSprite = new Image(); spikeSprite.src = './assets/sprites/spike.png'; // Load spikes in editor
+
+    bgImage.onload = wallSprite.onload = appleSprite.onload = finishSprite.onload = snakeSprite.onload = spikeSprite.onload = render;
+
+    // --- State ---
+    let levels = [ createEmptyLevel() ];
+    let currentLevelIdx = 0;
+    let currentTool = 'wall';
+    let isDrawing = false;
+
+    function createEmptyLevel() {
+      return { snake: [], food: [], finish: {x: -1, y: -1}, walls: [], spikes: [] }; // Added spikes
+    }
+
+    function getLevel() {
+      return levels[currentLevelIdx];
+    }
+
+    // --- UI Logic ---
+    function updateUI() {
+      document.getElementById('level-indicator').innerText = `Level ${currentLevelIdx + 1} / ${levels.length}`;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tool-${currentTool}`).classList.add('active');
+      render();
+    }
+
+    function setTool(tool) {
+      currentTool = tool;
+      updateUI();
+    }
+
+    function prevLevel() {
+      if (currentLevelIdx > 0) currentLevelIdx--;
+      updateUI();
+    }
+
+    function nextLevel() {
+      if (currentLevelIdx < levels.length - 1) currentLevelIdx++;
+      updateUI();
+    }
+
+    function addLevel() {
+      levels.push(createEmptyLevel());
+      currentLevelIdx = levels.length - 1;
+      updateUI();
+    }
+
+    function clearLevel() {
+      if(confirm("Are you sure you want to clear this level?")) {
+        levels[currentLevelIdx] = createEmptyLevel();
+        updateUI();
+      }
+    }
+
+    // --- Core Map Editing Logic ---
+    function removeFromCell(x, y) {
+      let lvl = getLevel();
+      lvl.walls = lvl.walls.filter(w => w.x !== x || w.y !== y);
+      lvl.spikes = lvl.spikes.filter(s => s.x !== x || s.y !== y); // Remove spikes
+      lvl.food = lvl.food.filter(f => f.x !== x || f.y !== y);
+      lvl.snake = lvl.snake.filter(s => s.x !== x || s.y !== y);
+      if (lvl.finish.x === x && lvl.finish.y === y) {
+        lvl.finish = {x: -1, y: -1};
+      }
+    }
+
+    function applyTool(gridX, gridY) {
+      if (gridX < 0 || gridY < 0 || gridX >= tileCount || gridY >= tileCount) return;
+
+      let lvl = getLevel();
+
+      if (currentTool === 'erase') {
+        removeFromCell(gridX, gridY);
+      } 
+      else if (currentTool === 'wall') {
+        removeFromCell(gridX, gridY);
+        lvl.walls.push({x: gridX, y: gridY});
+      } 
+      else if (currentTool === 'spike') { // Add Spike
+        removeFromCell(gridX, gridY);
+        lvl.spikes.push({x: gridX, y: gridY});
+      }
+      else if (currentTool === 'food') {
+        removeFromCell(gridX, gridY);
+        lvl.food.push({x: gridX, y: gridY});
+      }
+      else if (currentTool === 'finish') {
+        removeFromCell(gridX, gridY);
+        lvl.finish = {x: gridX, y: gridY};
+      }
+      else if (currentTool === 'snake') {
+        if (!lvl.snake.some(s => s.x === gridX && s.y === gridY)) {
+          removeFromCell(gridX, gridY);
+          lvl.snake.push({x: gridX, y: gridY});
+        }
+      }
+      render();
+    }
+
+    // --- Input Handling ---
+    function getGridCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor(((e.clientX - rect.left) * scaleX) / gridSize);
+      const y = Math.floor(((e.clientY - rect.top) * scaleY) / gridSize);
+      return {x, y};
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      let {x, y} = getGridCoords(e);
+      applyTool(x, y);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing) return;
+      if (currentTool === 'snake' || currentTool === 'finish') return; 
+      let {x, y} = getGridCoords(e);
+      applyTool(x, y);
+    });
+
+    window.addEventListener('mouseup', () => { isDrawing = false; });
+
+    // --- Rendering ---
+    function drawRotatedImage(img, sx, sy, sw, sh, destX, destY, dw, dh, angle) {
+      ctx.save();
+      ctx.translate(Math.floor(destX + dw / 2), Math.floor(destY + dh / 2));
+      ctx.rotate(angle);
+      ctx.drawImage(img, sx, sy, sw, sh, Math.floor(-dw / 2), Math.floor(-dh / 2), dw, dh);
+      ctx.restore();
+    }
+
+    function render() {
+      let lvl = getLevel();
+
+      if (bgImage.complete && bgImage.naturalHeight !== 0) ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= canvas.width; i += gridSize) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+      }
+
+      if (lvl.finish.x !== -1) {
+        if (finishSprite.complete && finishSprite.naturalWidth !== 0) {
+          ctx.drawImage(finishSprite, 0, 0, 8, 8, lvl.finish.x * gridSize, lvl.finish.y * gridSize, gridSize, gridSize);
+        } else {
+          ctx.fillStyle = '#ff0'; ctx.fillRect(lvl.finish.x * gridSize, lvl.finish.y * gridSize, gridSize, gridSize);
+        }
+      }
+
+      for (let f of lvl.food) {
+        if (appleSprite.complete && appleSprite.naturalWidth !== 0) {
+          ctx.drawImage(appleSprite, 0, 0, 8, 8, f.x * gridSize, f.y * gridSize, gridSize, gridSize);
+        } else { ctx.fillStyle = '#f00'; ctx.fillRect(f.x * gridSize, f.y * gridSize, gridSize, gridSize); }
+      }
+
+      for (let w of lvl.walls) {
+        if (wallSprite.complete && wallSprite.naturalWidth !== 0) {
+          ctx.drawImage(wallSprite, 0, 0, 8, 8, w.x * gridSize, w.y * gridSize, gridSize, gridSize);
+        } else { ctx.fillStyle = '#f0f'; ctx.fillRect(w.x * gridSize, w.y * gridSize, gridSize, gridSize); }
+      }
+
+      for (let s of lvl.spikes) {
+        if (spikeSprite.complete && spikeSprite.naturalWidth !== 0) {
+          ctx.drawImage(spikeSprite, 0, 0, 8, 8, s.x * gridSize, s.y * gridSize, gridSize, gridSize);
+        } else { ctx.fillStyle = '#aaa'; ctx.fillRect(s.x * gridSize, s.y * gridSize, gridSize, gridSize); }
+      }
+
+      for (let i = 0; i < lvl.snake.length; i++) {
+        let part = lvl.snake[i];
+        let destX = part.x * gridSize;
+        let destY = part.y * gridSize;
+
+        if (snakeSprite.complete && snakeSprite.naturalWidth !== 0) {
+          if (i === 0) {
+            let angle = 0;
+            if (lvl.snake.length > 1) {
+              let dX = lvl.snake[0].x - lvl.snake[1].x; let dY = lvl.snake[0].y - lvl.snake[1].y;
+              if (dX === 1) angle = Math.PI; else if (dX === -1) angle = 0; else if (dY === -1) angle = Math.PI / 2; else if (dY === 1) angle = -Math.PI / 2;
+            }
+            drawRotatedImage(snakeSprite, 0, 0, 8, 8, destX, destY, gridSize, gridSize, angle);
+          } else if (i === lvl.snake.length - 1) {
+            let angle = 0;
+            if (lvl.snake.length > 1) {
+              let dX = lvl.snake[i - 1].x - part.x; let dY = lvl.snake[i - 1].y - part.y;
+              if (dX === 1) angle = Math.PI; else if (dX === -1) angle = 0; else if (dY === -1) angle = Math.PI / 2; else if (dY === 1) angle = -Math.PI / 2;
+            }
+            drawRotatedImage(snakeSprite, 16, 0, 8, 8, destX, destY, gridSize, gridSize, angle);
+          } else {
+            ctx.drawImage(snakeSprite, 8, 0, 8, 8, destX, destY, gridSize, gridSize);
+          }
+        } else {
+          ctx.fillStyle = i === 0 ? '#0f0' : '#0a0'; 
+          ctx.fillRect(destX, destY, gridSize, gridSize);
+        }
+        
+        ctx.fillStyle = 'white';
+        ctx.font = '6px sans-serif';
+        ctx.fillText(i.toString(), destX + 2, destY + 6);
+      }
+    }
+
+    // --- IO Logic ---
+    function exportLevels() {
+      let out = "[\n";
+      for (let i = 0; i < levels.length; i++) {
+        let l = levels[i];
+        
+        let snakeStr = `[{x:${l.snake.map(p=>`${p.x},y:${p.y}`).join('},{x:')}}]`.replace('[{x:}]', '[]');
+        let foodStr = `[{x:${l.food.map(p=>`${p.x},y:${p.y}`).join('},{x:')}}]`.replace('[{x:}]', '[]');
+        let finishStr = `{x:${l.finish.x},y:${l.finish.y}}`;
+        let wallStr = `[{x:${l.walls.map(p=>`${p.x},y:${p.y}`).join('},{x:')}}]`.replace('[{x:}]', '[]');
+        let spikeStr = `[{x:${(l.spikes || []).map(p=>`${p.x},y:${p.y}`).join('},{x:')}}]`.replace('[{x:}]', '[]'); // Added spikes
+
+        out += `  {\n`;
+        out += `    snake: ${snakeStr},\n`;
+        out += `    food: ${foodStr},\n`;
+        out += `    finish: ${finishStr},\n`;
+        out += `    walls: ${wallStr},\n`;
+        out += `    spikes: ${spikeStr}\n`;
+        out += `  }${i === levels.length - 1 ? '' : ','}\n`;
+      }
+      out += "]";
+      
+      document.getElementById('io-box').value = out;
+    }
+
+    function importLevels() {
+      let rawText = document.getElementById('io-box').value.trim();
+      if (!rawText) return alert("Text box is empty!");
+
+      try {
+        let parsed = new Function("return " + rawText)();
+        if (Array.isArray(parsed)) {
+          for (let l of parsed) {
+            if (!l.snake || !l.food || !l.walls || !l.finish) throw new Error("Missing properties in level objects");
+            l.spikes = l.spikes || []; // Ensure spikes exist even on old level codes
+          }
+          levels = parsed;
+          currentLevelIdx = 0;
+          updateUI();
+          alert("Levels loaded successfully!");
+        } else {
+          throw new Error("Provided code is not an array");
+        }
+      } catch (err) {
+        alert("Failed to parse level data.\nError: " + err.message);
+      }
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
