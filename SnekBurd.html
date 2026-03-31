@@ -103,11 +103,12 @@
 
     // --- Asset Loading ---
     const bgImage = new Image(); bgImage.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/bgimage.png';
-    const snakeSprite = new Image(); snakeSprite.src = './assets/sprites/snake.png';
+    const snakeSprite = new Image(); snakeSprite.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/snake.png';
     const wallSprite = new Image(); wallSprite.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/wall.png';
     const appleSprite = new Image(); appleSprite.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/apple.png';
     const finishSprite = new Image(); finishSprite.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/finish.png';
     const spikeSprite = new Image(); spikeSprite.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/spike.png';
+    const restartSprite = new Image(); restartSprite.src = 'https://raw.githubusercontent.com/SilentisScurra/SnakeBird/main/bt_restart.png';
 
     // --- Game States ---
     const STATE_MENU = 0;
@@ -152,6 +153,34 @@
         finish: {x:7,y:5},
         walls: [{x:7,y:10},{x:5,y:11},{x:4,y:11},{x:4,y:12},{x:4,y:13},{x:4,y:14},{x:4,y:15},{x:3,y:11},{x:3,y:12},{x:3,y:13},{x:3,y:14},{x:3,y:15},{x:11,y:11},{x:11,y:12},{x:10,y:12},{x:10,y:13},{x:11,y:13},{x:11,y:14},{x:11,y:15},{x:10,y:15},{x:10,y:14},{x:7,y:6}],
         spikes: [{x:10,y:11},{x:10,y:10},{x:11,y:10},{x:5,y:10},{x:4,y:10},{x:3,y:10},{x:9,y:11}]
+      },
+      {
+        snake: [{x:8,y:4},{x:8,y:5},{x:7,y:5},{x:6,y:5},{x:6,y:4}],
+        food: [{x:4,y:12},{x:9,y:13}],
+        finish: {x:14,y:8},
+        walls: [{x:7,y:15},{x:8,y:15},{x:9,y:15},{x:9,y:14},{x:8,y:14},{x:7,y:14},{x:7,y:13},{x:5,y:9},{x:12,y:9},{x:12,y:10},{x:11,y:10},{x:7,y:6},{x:7,y:2},{x:7,y:1}],
+        spikes: [{x:8,y:13},{x:8,y:12},{x:6,y:9},{x:9,y:9},{x:11,y:9},{x:10,y:9},{x:4,y:9},{x:7,y:3},{x:12,y:7}]
+      }, 
+      {
+        snake: [{x:1,y:0},{x:0,y:0}],
+        food: [{x:2,y:0},{x:3,y:0},{x:4,y:0},{x:5,y:0},{x:6,y:0},{x:7,y:0},{x:8,y:0},{x:9,y:0},{x:10,y:0},{x:11,y:0},{x:12,y:0},{x:13,y:0},{x:14,y:0},{x:15,y:0},{x:15,y:1},{x:15,y:2},{x:15,y:3},{x:14,y:3},{x:13,y:3},{x:13,y:2},{x:12,y:2},{x:11,y:2},{x:10,y:2},{x:9,y:2},{x:8,y:2},{x:7,y:2},{x:6,y:2},{x:5,y:2},{x:4,y:2},{x:3,y:2},{x:2,y:2},{x:1,y:2},{x:0,y:3},{x:0,y:2},{x:0,y:4},{x:1,y:4},{x:2,y:4},{x:3,y:4},{x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},{x:10,y:4},{x:11,y:4},{x:11,y:5},{x:12,y:5},{x:13,y:5},{x:14,y:5},{x:15,y:5},{x:15,y:6},{x:15,y:7},{x:14,y:7},{x:13,y:7},{x:12,y:7},{x:11,y:7},{x:10,y:7},{x:9,y:7},{x:9,y:6},{x:8,y:6},{x:7,y:6},{x:6,y:6},{x:5,y:6},{x:4,y:6},{x:3,y:6},{x:2,y:6},{x:1,y:6},{x:0,y:6},{x:0,y:7},{x:0,y:8},{x:1,y:8},{x:2,y:8},{x:3,y:8},{x:4,y:8},{x:5,y:8},{x:6,y:8},{x:7,y:8},{x:7,y:9},{x:8,y:9},{x:9,y:9},{x:10,y:9},{x:11,y:9},{x:12,y:9},{x:13,y:9},{x:14,y:9},{x:15,y:9},{x:15,y:10},{x:15,y:11},{x:14,y:11},{x:13,y:11},{x:12,y:11},{x:11,y:11},{x:10,y:11},{x:9,y:11},{x:8,y:11},{x:7,y:11},{x:6,y:11},{x:5,y:10},{x:4,y:10},{x:3,y:10},{x:2,y:10},{x:1,y:10},{x:0,y:10},{x:0,y:11},{x:0,y:12},{x:1,y:12},{x:2,y:12},{x:3,y:12},{x:5,y:13},{x:4,y:13},{x:6,y:13},{x:7,y:13},{x:8,y:13},{x:9,y:13},{x:10,y:13},{x:11,y:13},{x:12,y:13},{x:13,y:13},{x:15,y:13},{x:14,y:13},{x:5,y:11},{x:3,y:13}],
+        finish: {x:15,y:14},
+        walls: [{x:0,y:1},{x:1,y:1},{x:2,y:1},{x:3,y:1},{x:4,y:1},{x:5,y:1},{x:6,y:1},{x:7,y:1},{x:8,y:1},{x:9,y:1},{x:10,y:1},{x:11,y:1},{x:12,y:1},{x:13,y:1},{x:14,y:1},{x:14,y:2},{x:15,y:4},{x:14,y:4},{x:13,y:4},{x:12,y:4},{x:12,y:3},{x:11,y:3},{x:10,y:3},{x:9,y:3},{x:8,y:3},{x:7,y:3},{x:6,y:3},{x:5,y:3},{x:4,y:3},{x:3,y:3},{x:2,y:3},{x:0,y:5},{x:1,y:5},{x:2,y:5},{x:3,y:5},{x:4,y:5},{x:5,y:5},{x:6,y:5},{x:7,y:5},{x:8,y:5},{x:9,y:5},{x:10,y:5},{x:10,y:6},{x:11,y:6},{x:12,y:6},{x:13,y:6},{x:14,y:6},{x:15,y:8},{x:14,y:8},{x:13,y:8},{x:12,y:8},{x:11,y:8},{x:10,y:8},{x:9,y:8},{x:8,y:8},{x:8,y:7},{x:7,y:7},{x:6,y:7},{x:5,y:7},{x:4,y:7},{x:3,y:7},{x:2,y:7},{x:1,y:7},{x:1,y:3},{x:0,y:9},{x:1,y:9},{x:2,y:9},{x:3,y:9},{x:4,y:9},{x:5,y:9},{x:6,y:9},{x:6,y:10},{x:7,y:10},{x:8,y:10},{x:9,y:10},{x:10,y:10},{x:11,y:10},{x:12,y:10},{x:13,y:10},{x:14,y:10},{x:15,y:12},{x:14,y:12},{x:13,y:12},{x:12,y:12},{x:11,y:12},{x:10,y:12},{x:9,y:12},{x:8,y:12},{x:7,y:12},{x:6,y:12},{x:0,y:14},{x:1,y:14},{x:2,y:14},{x:3,y:14},{x:4,y:14},{x:5,y:14},{x:6,y:14},{x:7,y:14},{x:8,y:14},{x:9,y:14},{x:10,y:14},{x:11,y:14},{x:12,y:14},{x:13,y:14},{x:14,y:14},{x:0,y:15},{x:1,y:15},{x:2,y:15},{x:3,y:15},{x:4,y:15},{x:5,y:15},{x:6,y:15},{x:7,y:15},{x:8,y:15},{x:9,y:15},{x:10,y:15},{x:11,y:15},{x:12,y:15},{x:13,y:15},{x:14,y:15},{x:15,y:15},{x:4,y:11},{x:3,y:11},{x:2,y:11},{x:1,y:11},{x:2,y:13},{x:1,y:13},{x:0,y:13},{x:5,y:12},{x:4,y:12}],
+        spikes: []
+      },
+      {
+        snake: [{x:10,y:8},{x:11,y:8},{x:12,y:8}],
+        food: [{x:8,y:6},{x:7,y:5},{x:5,y:5},{x:4,y:6},{x:4,y:7},{x:3,y:7},{x:3,y:9},{x:4,y:9},{x:5,y:9},{x:5,y:8},{x:5,y:7},{x:6,y:7},{x:6,y:6},{x:7,y:7},{x:8,y:7},{x:9,y:7},{x:9,y:9},{x:8,y:9},{x:7,y:9},{x:7,y:8},{x:6,y:10},{x:5,y:11},{x:4,y:10},{x:6,y:9},{x:7,y:11},{x:8,y:10}],
+        finish: {x:14,y:8},
+        walls: [{x:15,y:8},{x:14,y:9},{x:13,y:9},{x:12,y:10},{x:11,y:10},{x:9,y:10},{x:10,y:10},{x:9,y:11},{x:9,y:12},{x:9,y:13},{x:8,y:13},{x:7,y:13},{x:6,y:14},{x:5,y:14},{x:4,y:14},{x:4,y:13},{x:5,y:13},{x:6,y:13},{x:4,y:12},{x:5,y:12},{x:6,y:12},{x:7,y:12},{x:8,y:12},{x:3,y:11},{x:3,y:10},{x:2,y:10},{x:1,y:10},{x:2,y:9},{x:1,y:9},{x:2,y:8},{x:1,y:8},{x:2,y:7},{x:2,y:6},{x:3,y:6},{x:3,y:5},{x:3,y:4},{x:6,y:3},{x:7,y:3},{x:4,y:4},{x:5,y:3},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},{x:9,y:5},{x:10,y:5},{x:10,y:6},{x:9,y:6},{x:10,y:7},{x:10,y:9},{x:12,y:9},{x:11,y:9},{x:11,y:7},{x:12,y:7},{x:13,y:7},{x:14,y:7},{x:15,y:7},{x:14,y:6},{x:13,y:6},{x:12,y:6},{x:5,y:6},{x:7,y:6},{x:4,y:8},{x:6,y:8},{x:8,y:8},{x:5,y:10},{x:7,y:10}],
+        spikes: []
+      },
+      {
+        snake: [{x:7,y:8},{x:6,y:8},{x:6,y:7},{x:6,y:6}],
+        food: [{x:6,y:4},{x:7,y:10},{x:9,y:2},{x:1,y:4}],
+        finish: {x:11,y:10},
+        walls: [{x:7,y:9},{x:9,y:7},{x:5,y:5},{x:4,y:11},{x:10,y:11},{x:8,y:11},{x:9,y:11}],
+        spikes: [{x:8,y:9},{x:6,y:9},{x:7,y:7},{x:9,y:9},{x:10,y:9},{x:11,y:9},{x:12,y:9},{x:9,y:8},{x:7,y:3},{x:7,y:2},{x:7,y:6},{x:7,y:5},{x:7,y:4},{x:6,y:3},{x:5,y:3},{x:4,y:3},{x:3,y:3},{x:2,y:3},{x:6,y:11},{x:6,y:10},{x:1,y:3}]
       }
     ];
 
@@ -174,6 +203,38 @@
     // --- Lerping Variables ---
     let lerpProgress = 1;
     const LERP_SPEED = .2; 
+
+    // --- UI Variables ---
+    let mouseX = 0;
+    let mouseY = 0;
+    let isHoveringRestart = false;
+    const RESTART_BTN_X = 118; // Canvas is 128x128, size is 8. Placed 2 pixels from top-right.
+    const RESTART_BTN_Y = 2;
+    const RESTART_BTN_SIZE = 8;
+
+    // --- Mouse Inputs ---
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      // Scale mouse position to internal 128x128 resolution
+      mouseX = ((e.clientX - rect.left) / rect.width) * canvas.width;
+      mouseY = ((e.clientY - rect.top) / rect.height) * canvas.height;
+
+      if (gameState === STATE_PLAY || gameState === STATE_FINISH) {
+        isHoveringRestart = (mouseX >= RESTART_BTN_X && mouseX <= RESTART_BTN_X + RESTART_BTN_SIZE &&
+                             mouseY >= RESTART_BTN_Y && mouseY <= RESTART_BTN_Y + RESTART_BTN_SIZE);
+        canvas.style.cursor = isHoveringRestart ? 'pointer' : 'default';
+      } else {
+        isHoveringRestart = false;
+        canvas.style.cursor = 'default';
+      }
+    });
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (isHoveringRestart && (gameState === STATE_PLAY || gameState === STATE_FINISH)) {
+        // Trigger a transition to reload the exact same level
+        startTransitionToLevel(currentLevelIdx);
+      }
+    });
 
     // --- Initialization & Local Storage ---
     function initMenu() {
@@ -209,6 +270,8 @@
       gameState = STATE_TRANSITION;
       fadeAlpha = 0;
       fadeDir = 1; 
+      isHoveringRestart = false;
+      canvas.style.cursor = 'default';
     }
 
     function loadLevel(idx) {
@@ -507,6 +570,28 @@
         }
       }
 
+      // Render the Restart Button during gameplay
+      if (gameState === STATE_PLAY || gameState === STATE_FINISH) {
+        let rDrawX = RESTART_BTN_X;
+        let rDrawY = RESTART_BTN_Y;
+        let rSize = RESTART_BTN_SIZE;
+
+        // Slight "pop" effect if hovered
+        if (isHoveringRestart) {
+          rDrawX -= 1;
+          rDrawY -= 1;
+          rSize += 2;
+        }
+
+        if (restartSprite.complete && restartSprite.naturalWidth !== 0) {
+          ctx.drawImage(restartSprite, rDrawX, rDrawY, rSize, rSize);
+        } else {
+          // Fallback box if the image hasn't loaded
+          ctx.fillStyle = isHoveringRestart ? '#fff' : '#aaa';
+          ctx.fillRect(rDrawX, rDrawY, rSize, rSize);
+        }
+      }
+
       if (fadeAlpha > 0) {
         ctx.fillStyle = `rgba(0, 0, 0, ${fadeAlpha})`;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -525,6 +610,7 @@
         case 'ArrowRight': intendedDx = 1; break;
         case 'ArrowUp': intendedDy = -1; break;
         case 'ArrowDown': intendedDy = 1; break;
+        case 'r': startTransitionToLevel(currentLevelIdx); return; // Standard R key reset
         default: return; 
       }
 
